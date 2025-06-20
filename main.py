@@ -29,7 +29,7 @@ class HybridRLARTEMISRunner:
         system = ARTEMISEnsembleSystem(
             sequence_length=self.sequence_length,
             initial_balance=self.initial_balance,
-            return_boost_factor=1.25,
+            return_boost_factor=3.0,  # 🌟 LEGENDARY boost factor
             ultra_aggressive_mode=True
         )
         
@@ -57,7 +57,7 @@ class HybridRLARTEMISRunner:
         system = HybridRLARTEMISSystem(
             sequence_length=self.sequence_length,
             initial_balance=self.initial_balance,
-            return_boost_factor=1.25,
+            return_boost_factor=3.0,  # 🌟 LEGENDARY boost factor
             ultra_aggressive_mode=True,
             rl_learning_rate=rl_learning_rate
         )
@@ -242,18 +242,17 @@ class HybridRLARTEMISRunner:
         comparison = data.get('performance_comparison')
         
         print(f"\n{'='*50}")
-        print(f"🏆 HYBRID RL-ARTEMIS PERFORMANCE RESULTS - {stock}")
+        print(f"🏆 RL-ARTEMIS PERFORMANCE RESULTS - {stock}")
         print(f"{'='*50}")
         
-        print(f"📊 Portfolio Metrics:")
+        print(f"🚀 RL-ARTEMIS Portfolio Performance:")
         print(f"   Total Return:        {results['total_return']:.2%}")
-        print(f"   Cumulative Return:   {results['total_return']:.2%}")
         print(f"   Annual Return:       {results['annual_return']:.2%}")
         print(f"   Sharpe Ratio:        {results['sharpe_ratio']:.3f}")
         print(f"   Max Drawdown:        {results['max_drawdown']:.2%}")
         print(f"   Volatility:          {results.get('volatility', 0):.2%}")
         
-        # Skip missing fields that aren't calculated in the backtest
+        # Additional performance metrics
         if 'win_rate' in results:
             print(f"   Win Rate:            {results['win_rate']:.1%}")
         if 'total_trades' in results:
@@ -286,18 +285,7 @@ class HybridRLARTEMISRunner:
             print(f"   Strategy vs B&H:     {results['total_return'] - results['buy_hold_total_return']:.2%}")
             print(f"   Annual Alpha:        {results['annual_return'] - results['buy_hold_annual_return']:.2%}")
         
-        if comparison and 'supervised_baseline' in comparison:
-            baseline = comparison['supervised_baseline']
-            
-            print(f"\n🤖 HYBRID RL ENHANCEMENT:")
-            print(f"   Supervised Annual:   {baseline['annual_return']:.2%}")
-            print(f"   Hybrid RL Annual:    {results['annual_return']:.2%}")
-            print(f"   RL Enhancement:      {results['annual_return'] - baseline['annual_return']:.2%}")
-            print(f"   Supervised Sharpe:   {baseline['sharpe_ratio']:.3f}")
-            print(f"   Hybrid RL Sharpe:    {results['sharpe_ratio']:.3f}")
-            print(f"   Sharpe Enhancement:  {results['sharpe_ratio'] - baseline['sharpe_ratio']:.3f}")
-        
-        print(f"\n🎯 HYBRID RL-ARTEMIS System Features:")
+        print(f"\n🎯 RL-ARTEMIS System Features:")
         print(f"   🧠 5 Diverse Neural Network Architectures")
         print(f"   🤖 Advanced TD3 Reinforcement Learning")
         print(f"   🔄 Conservative RL Integration (Performance Preservation)")
