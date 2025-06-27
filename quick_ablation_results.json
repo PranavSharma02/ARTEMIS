@@ -1,0 +1,23 @@
+{
+  "single_model": {
+    "annual_return": 0.2141471533464967,
+    "sharpe_ratio": 1.5633144045012528,
+    "max_drawdown": -0.11841731609800354,
+    "win_rate": 0.5438233264320221,
+    "total_trades": 1449
+  },
+  "basic_ensemble": {
+    "annual_return": 0.3268406791939962,
+    "sharpe_ratio": 2.3093789254765213,
+    "max_drawdown": -0.06989559562325132,
+    "win_rate": 0.5541752933057281,
+    "total_trades": 1449
+  },
+  "diverse_ensemble": {
+    "annual_return": 0.3284090551208392,
+    "sharpe_ratio": 1.7181422765509127,
+    "max_drawdown": -0.1429752293077463,
+    "win_rate": 0.546583850931677,
+    "total_trades": 1449
+  }
+}
