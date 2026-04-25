@@ -15,6 +15,7 @@ from datetime import datetime
 
 import torch
 import numpy as np
+import pandas as pd
 
 # Allow imports from ATHENA package directory
 sys.path.insert(0, os.path.dirname(__file__))
@@ -153,14 +154,9 @@ class ATHENARunner:
             'type': data['type'],
             'timestamp': ts,
             'results': {
-                k: float(np.asarray(v).flatten()[0])
+                k: (float(v) if isinstance(v, (int, float, np.floating, np.integer)) else str(v))
                 for k, v in data['results'].items()
-                if np.asarray(v).size == 1 or k in (
-                    'total_return', 'annual_return', 'sharpe_ratio',
-                    'max_drawdown', 'win_rate', 'total_trades',
-                    'trading_days', 'years',
-                    'buy_hold_total_return', 'buy_hold_annual_return',
-                )
+                if not isinstance(v, (np.ndarray, pd.Series, list))
             },
         }
         with open(fname, 'w') as f:
