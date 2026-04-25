@@ -115,7 +115,10 @@ class ATHENARunner:
         print(f"  Annual Return:       {results['annual_return']:.2%}")
         print(f"  Sharpe Ratio:        {results['sharpe_ratio']:.3f}")
         print(f"  Max Drawdown:        {results['max_drawdown']:.2%}")
-        print(f"  Volatility:          {results.get('volatility', 0):.2%}")
+        vol = results.get('volatility', None)
+        if vol is None and 'portfolio_returns' in results:
+            vol = float(np.std(results['portfolio_returns']) * np.sqrt(252))
+        print(f"  Volatility:          {(vol or 0):.2%}")
 
         if mode == 'hybrid_rl':
             comp = data.get('performance_comparison')
@@ -149,7 +152,16 @@ class ATHENARunner:
             'stock': data['stock'],
             'type': data['type'],
             'timestamp': ts,
-            'results': {k: float(v) for k, v in data['results'].items()},
+            'results': {
+                k: float(np.asarray(v).flatten()[0])
+                for k, v in data['results'].items()
+                if np.asarray(v).size == 1 or k in (
+                    'total_return', 'annual_return', 'sharpe_ratio',
+                    'max_drawdown', 'win_rate', 'total_trades',
+                    'trading_days', 'years',
+                    'buy_hold_total_return', 'buy_hold_annual_return',
+                )
+            },
         }
         with open(fname, 'w') as f:
             json.dump(out, f, indent=2)
