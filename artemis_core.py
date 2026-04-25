@@ -154,7 +154,7 @@ class ARTEMISEnsembleSystem(PyTorchNovelTradingSystem):
         df['ARTEMIS_Trend_8'] = df['Close'].rolling(8).mean() / df['Close'].shift(8) - 1
         
         # Handle missing values
-        df = df.fillna(method='ffill').fillna(method='bfill').fillna(0)
+        df = df.ffill().bfill().fillna(0)
         
         self.features_df = df
         

@@ -133,7 +133,7 @@ class ATHENAEnsembleSystem(PyTorchNovelTradingSystem):
         # Wavelet features (Mod 2)
         df = self.wavelet_extractor.extract(df)
 
-        df = df.fillna(method='ffill').fillna(method='bfill').fillna(0)
+        df = df.ffill().bfill().fillna(0)
         self.features_df = df
         print(f"   [ATHENA] Enhanced features: {len(df.columns)} columns")
         return df
