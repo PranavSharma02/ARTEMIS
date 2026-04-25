@@ -420,3 +420,10 @@ class ATHENAEnsembleSystem(PyTorchNovelTradingSystem):
                 final_signals[i] = np.clip(base_sig * mult, -1.2, 1.2)
 
         return final_signals
+
+    # ------------------------------------------------------------------
+    # Backtesting wrapper
+    # ------------------------------------------------------------------
+
+    def backtest_signals(self, signals):
+        return self.backtest_novel_signals(signals)
