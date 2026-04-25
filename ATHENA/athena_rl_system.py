@@ -102,6 +102,7 @@ class HybridRLATHENASystem(ATHENAEnsembleSystem):
             state_size=state_size,
             n_models=n_models,
             market_features=market_features,
+            device=self.device,
         )
 
         self.confidence_gate = AdaptiveConfidenceGate(
@@ -115,7 +116,10 @@ class HybridRLATHENASystem(ATHENAEnsembleSystem):
             raise ValueError("RL agents must be initialized first")
 
         for ep in range(episodes):
-            self._run_rl_episode()
+            ep_reward = self._run_rl_episode()
+
+            if (ep + 1) % 50 == 0:
+                print(f"      RL Episode {ep+1}/{episodes} | Reward: {ep_reward:.2f}", flush=True)
 
             if (ep + 1) % eval_freq == 0:
                 perf = self._evaluate_hybrid_performance()
@@ -123,6 +127,7 @@ class HybridRLATHENASystem(ATHENAEnsembleSystem):
                 if perf < baseline_sharpe * self.performance_threshold:
                     self.performance_violations += 1
                     if self.performance_violations >= self.max_violations:
+                        print(f"      RL fallback triggered at episode {ep+1}", flush=True)
                         self.fallback_mode = True
                         break
                 else:

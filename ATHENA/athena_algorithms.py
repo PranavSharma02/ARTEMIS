@@ -157,11 +157,12 @@ class ATHENASACAgent(nn.Module):
     Replaces the deterministic TD3 policy in ARTEMIS.
     """
 
-    def __init__(self, state_size, action_size, hidden_size=256, lr=1e-4):
+    def __init__(self, state_size, action_size, hidden_size=256, lr=1e-4, device=None):
         super().__init__()
         self.state_size = state_size
         self.action_size = action_size
         self.hidden_size = hidden_size
+        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # Stochastic actor (outputs mean + log_std)
         self.actor_backbone = nn.Sequential(
@@ -198,6 +199,8 @@ class ATHENASACAgent(nn.Module):
         self.max_position = 1.0
         self.risk_threshold = 0.02
 
+        self.to(self.device)
+
     def _build_critic(self):
         return nn.Sequential(
             nn.Linear(self.state_size + self.action_size, self.hidden_size),
@@ -228,7 +231,7 @@ class ATHENASACAgent(nn.Module):
         return action, log_prob
 
     def act(self, state, add_noise=True):
-        state_t = torch.FloatTensor(state).unsqueeze(0)
+        state_t = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         with torch.no_grad():
             action, _ = self._sample_action(state_t)
         action = action.cpu().numpy().flatten()
@@ -246,11 +249,11 @@ class ATHENASACAgent(nn.Module):
             return
 
         states, actions, rewards, next_states, dones = self.memory.sample(batch_size)
-        states = torch.FloatTensor(np.array(states))
-        actions = torch.FloatTensor(np.array(actions))
-        rewards = torch.FloatTensor(np.array(rewards)).unsqueeze(1)
-        next_states = torch.FloatTensor(np.array(next_states))
-        dones = torch.BoolTensor(np.array(dones)).unsqueeze(1)
+        states = torch.FloatTensor(np.array(states)).to(self.device)
+        actions = torch.FloatTensor(np.array(actions)).to(self.device)
+        rewards = torch.FloatTensor(np.array(rewards)).unsqueeze(1).to(self.device)
+        next_states = torch.FloatTensor(np.array(next_states)).to(self.device)
+        dones = torch.BoolTensor(np.array(dones)).unsqueeze(1).to(self.device)
 
         # --- Update critics ---
         with torch.no_grad():
@@ -331,23 +334,24 @@ class AdaptiveConfidenceGate(nn.Module):
 # ---------------------------------------------------------------------------
 
 class ATHENAMultiAgentSystem:
-    def __init__(self, state_size, n_models=5, market_features=20):
+    def __init__(self, state_size, n_models=5, market_features=20, device=None):
         self.state_size = state_size
         self.n_models = n_models
         self.market_features = market_features
+        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.coordinator = ATHENACoordinatorAgent(n_models, market_features // 2)
-        self.position_sizer = ATHENAPositionSizerAgent(market_features)
-        self.regime_agent = ATHENARegimeAgent(state_size)
-        self.sac_agent = ATHENASACAgent(state_size + market_features, 1)
+        self.coordinator = ATHENACoordinatorAgent(n_models, market_features // 2).to(self.device)
+        self.position_sizer = ATHENAPositionSizerAgent(market_features).to(self.device)
+        self.regime_agent = ATHENARegimeAgent(state_size).to(self.device)
+        self.sac_agent = ATHENASACAgent(state_size + market_features, 1, device=self.device)
 
         self.performance_history = []
         self.episode_rewards = []
 
     def act(self, state, model_predictions, market_features):
-        state_t = torch.FloatTensor(state).unsqueeze(0)
-        preds_t = torch.FloatTensor(model_predictions).unsqueeze(0)
-        market_t = torch.FloatTensor(market_features).unsqueeze(0)
+        state_t = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+        preds_t = torch.FloatTensor(model_predictions).unsqueeze(0).to(self.device)
+        market_t = torch.FloatTensor(market_features).unsqueeze(0).to(self.device)
 
         weights, _ = self.coordinator(preds_t, market_t[:, :10])
         pos_mult, _, _ = self.position_sizer(market_t)
